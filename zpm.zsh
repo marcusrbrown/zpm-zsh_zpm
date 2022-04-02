@@ -9,24 +9,19 @@
 # i – … the zsh_loaded_plugins activity indicator,
 # P – … the ZPFX global parameter,
 # s – … the PMSPEC global parameter itself (i.e.: should be always present).
-export PMSPEC="0fbiPs"
-export ZPFX="${HOME}/.local"
+export PMSPEC="0fbs"
+export _ZPM_DIR="${${(%):-%x}:h}"
 
-0=${(%):-%x}
-export _ZPM_DIR=${0:h}
-export _ZPM_PLUGIN_DIR="${0:h}/plugins"
+export ZSH_CACHE_DIR="${TMPDIR:-/tmp}/zsh-${UID:-user}"
+_ZPM_CACHE="${ZSH_CACHE_DIR}/zpm-cache.zsh"
+_ZPM_CACHE_ASYNC="${ZSH_CACHE_DIR}/zpm-cache-async.zsh"
+_ZPM_COMPDUMP="${ZSH_CACHE_DIR}/zcompdump"
 
-_ZPM_CACHE_DIR="${TMPDIR:-/tmp}/zsh-${UID:-user}"
-_ZPM_CACHE="${_ZPM_CACHE_DIR}/zpm-cache.zsh"
-_ZPM_CACHE_ASYNC="${_ZPM_CACHE_DIR}/zpm-cache-async.zsh"
-_ZPM_COMPDUMP="${_ZPM_CACHE_DIR}/zcompdump"
-
-fpath+=("${_ZPM_DIR}/functions" "${_ZPM_CACHE_DIR}/functions")
-export PATH="$PATH:${_ZPM_CACHE_DIR}/bin"
-typeset -aU path cdpath fpath manpath
+fpath=("${_ZPM_DIR}/functions" "${ZSH_CACHE_DIR}/functions" $fpath)
+export PATH="${ZSH_CACHE_DIR}/bin:$PATH"
+typeset -gaU path fpath
 
 autoload -Uz compinit
-zstyle ':completion:*:zpm:*' sort false
 
 if [[ -f "${_ZPM_CACHE}" ]]; then
   source "${_ZPM_CACHE}"

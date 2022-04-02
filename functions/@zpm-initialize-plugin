@@ -10,14 +10,12 @@ local zpm_plugin_async=false
 local zpm_plugin_bin_path=true
 local zpm_plugin_functions_path=true
 local zpm_plugin_autoload=''
-local zpm_plugin_autoload_all=false
 
 if [[ -f "${Plugin_path}/plugin-options.zsh" ]]; then
   source "${Plugin_path}/plugin-options.zsh"
 fi
 
 @zpm-log zpm:init "Initialize '${Plugin_name}'"
-zsh_loaded_plugins+=("$Plugin_name")
 
 # Config
 if [[ "$Plugin" == *",apply:"* ]]; then
@@ -41,10 +39,6 @@ if [[ "$Plugin"  == *",async"* ]]; then
   zpm_plugin_async=true
 fi
 
-if [[ "$Plugin" == *",autoload-all"* ]]; then
-  zpm_plugin_autoload_all=true
-fi
-
 # Fpath
 if [[ "$zpm_plugin_functions_path" == "true" ]]; then
   local Plugin_functions_path=$(@zpm-get-plugin-functions-path "$Plugin" "$Plugin_path")
@@ -52,13 +46,6 @@ if [[ "$zpm_plugin_functions_path" == "true" ]]; then
     @zpm-log zpm:init:fpath "Add to \$fpath '${Plugin_functions_path}'"
     @zpm-addfpath "${Plugin_functions_path}"
   fi
-fi
-
-# Autoload
-local Plugin_autoload_files=$(@zpm-get-plugin-autoload "$Plugin" "$Plugin_path" "$Plugin_functions_path" "$zpm_plugin_autoload_all")
-if [[ -n "$Plugin_autoload_files" ]]; then
-  @zpm-log zpm:init:autoload "Autoload ${Plugin_autoload_files}"
-  @zpm-add-autoload "$Plugin_autoload_files"
 fi
 
 # Bin path
@@ -72,7 +59,7 @@ fi
 
 # Source plugin
 if [[ "$zpm_plugin_source" == "true" ]]; then
-  local _ZPM_plugin_file_path=$( @zpm-get-plugin-file-path "${Plugin_path}" "${Plugin_basename}" "${Plugin}" )
+  local _ZPM_plugin_file_path=$( @zpm-get-plugin-file-path "${Plugin}" "${Plugin_path}" "${Plugin_basename}" )
   if [[ -n "$_ZPM_plugin_file_path" ]]; then
     if [[ "$zpm_plugin_async" == "true" ]]; then
       @zpm-async-source "${Plugin_name}" "${_ZPM_plugin_file_path}"
@@ -84,4 +71,11 @@ if [[ "$zpm_plugin_source" == "true" ]]; then
   fi
 else
   @zpm-no-source "${Plugin_name}" 'disabled'
+fi
+
+# Autoload
+local Plugin_autoload_files=$(@zpm-get-plugin-autoload "$Plugin" "$zpm_plugin_autoload")
+if [[ -n "$Plugin_autoload_files" ]]; then
+  @zpm-log zpm:init:autoload "Autoload ${Plugin_autoload_files}"
+  @zpm-add-autoload "$Plugin_autoload_files"
 fi

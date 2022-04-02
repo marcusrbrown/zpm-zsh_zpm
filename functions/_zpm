@@ -1,18 +1,34 @@
 #compdef zpm
 #autoload
 
-autoload -Uz @zpm-get-plugin-name
-
-local _zpm_completions_plugins_local=()
-for plugin in "$_ZPM_PLUGIN_DIR/"*; do
+local _zpm_completions_plugins_local=( @zpm )
+for plugin in "${_ZPM_DIR}/plugins/"*; do
   _zpm_completions_plugins_local+=( ${${plugin:t}//---/\/} )
 done
 
-local _zpm_completions_plugins_loadable=($(
-    echo ${_zpm_completions_plugins_local[@]} ${zsh_loaded_plugins[@]} | tr ' ' '\n' | sort | uniq -u
+if [[ -e "${_ZPM_DIR}/plugins/@omz" ]]; then
+  for omz_plugin in "${_ZPM_DIR}/plugins/@omz/plugins/"*; do
+    _zpm_completions_plugins_local+=( "@omz/${omz_plugin:t}" )
+  done
+
+  for omz_lib in "${_ZPM_DIR}/plugins/@omz/lib/"*; do
+    _zpm_completions_plugins_local+=( "@omz/lib/${${omz_lib:t}%.zsh}" )
+  done
+
+  for omz_theme in "${_ZPM_DIR}/plugins/@omz/themes/"*; do
+    _zpm_completions_plugins_local+=( "@omz/theme/${${omz_theme:t}%.zsh-theme}" )
+  done
+fi
+
+local _zpm_completions_plugins_installed=($(
+    printf '%s\n%s\n' "${_zpm_completions_plugins_local[@]}" | sort | uniq
 ))
 
-local _zpm_upgrade_plugins=(@zpm $zsh_loaded_plugins)
+local _zpm_completions_plugins_loadable=($(
+    printf '%s\n%s\n' "${_zpm_completions_plugins_installed[@]}" "${(k)_ZPM_plugins_full[@]}" | sort | uniq -u
+))
+
+local _zpm_upgrade_plugins=(@zpm ${(k)_ZPM_plugins_full})
 
 local _load_args=(
   'load:Load plugin'
@@ -36,6 +52,7 @@ local _zpm_completions_if_args=(
   'ssh:SSH session'
   'vte:VTE based terminal emulator'
 )
+local _zpm_loaded_plugins=(${(k)_ZPM_plugins_full})
 
 _arguments '*:: :->subcmds' && return 0
 
@@ -66,7 +83,6 @@ if (( CURRENT > 1 )); then
     "_zpm_${words[$PRE]}_completion"
     return
   else
-    _describe -t commands "zpm subcommand" zsh_loaded_plugins
     return
   fi
 fi
