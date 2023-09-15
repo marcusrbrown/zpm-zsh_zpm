@@ -3,37 +3,36 @@
 fpath+=("${_ZPM_DIR}/functions" "${ZSH_CACHE_DIR}/functions")
 
 function _msg() {
-  local color
-  local symbol
   local msg
+  local color
 
   if [[ "$Command" == "install" ]]; then
     if [[ "$1" == "skip" ]]; then
       msg="Skip install"
-      color="${c[yellow]}"
-      symbol='✖'
+      color="${c[yellow]}${c[bold]}"
+      symbol='✗'
     elif [[ "$1" == "0" ]]; then
       msg="Install"
-      color="${c[green]}"
-      symbol='✔'
+      color="${c[green]}${c[bold]}"
+      symbol='✓'
     else
       msg="Can't install"
-      color="${c[red]}"
-      symbol='✖'
+      color="${c[red]}${c[bold]}"
+      symbol='✗'
     fi
   elif [[ "$Command" == "upgrade" ]]; then
     if [[ "$1" == "skip" ]]; then
       msg='Skip upgrade'
-      color="${c[yellow]}"
-      symbol='✖'
+      color="${c[yellow]}${c[bold]}"
+      symbol='✗'
     elif [[ "$1" == "0" ]]; then
       msg='Upgrade'
-      color="${c[green]}"
-      symbol='✔'
+      color="${c[green]}${c[bold]}"
+      symbol='✓'
     else
       msg="Can't upgrade"
-      color="${c[red]}"
-      symbol='✖'
+      color="${c[red]}${c[bold]}"
+      symbol='✗'
     fi
   fi
 
@@ -116,10 +115,8 @@ elif [[ "$Plugin_origin_type" == 'exec' ]]; then
   cd "${Plugin_destination_path:h}"
   eval "$Plugin_origin" 1>! "${Plugin_destination_path}" 2>/dev/null
   _msg $?
-elif [[ "$Plugin_origin_type" == 'omz-old' ]]; then
-  echo "Deprecated, use ${Plugin_name/@omz-/@omz/}"
-  mkdir -p "${Plugin_destination_path:h}"
-  ln -sf "${Plugin_origin}" "${Plugin_destination_path}" 2>/dev/null
+elif [[ "$Plugin_origin_type" == 'empty' ]]; then
+  mkdir -p "${Plugin_path}"
   _msg $?
 else
   _msg skip
@@ -133,5 +130,5 @@ if [[ "$Plugin" == *',hook:'* && -e "$Plugin_path" ]]; then
   cd "$Plugin_path"
   eval "${${Plugin##*,hook:}%%\,*}" >/dev/null
 
-  echo "${c[green]}${c[bold]}Run hook for${c[reset]} ${Plugin_documentation_hyperlink} ${c[green]}✔${c[reset]}"
+  echo "${c[green]}${c[bold]}Run hook for${c[reset]} ${Plugin_documentation_hyperlink} ${c[green]}✓${c[reset]}"
 fi
